@@ -21,7 +21,7 @@ router.post('/register', async (req, res, next) => {
     const db: Db = res.locals.db;
     const collection = db.collection('user');
     const { body } = req;
-    const { email, name, imageUrl, password }: User = body;
+    const { email, name, password }: User = body;
 
     const lowerEmail = email.toLowerCase();
     
@@ -34,7 +34,7 @@ router.post('/register', async (req, res, next) => {
         const newUser: User = {
           email: lowerEmail,
           name,
-          imageUrl,
+          imageUrl: "",
           password: await encryptPassword(password),
           createdAt: now,
           updatedAt: now,
