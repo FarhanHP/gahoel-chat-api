@@ -73,6 +73,12 @@ router.post('/login', async (req, res, next) => {
         if(firebaseRegisterToken) {
           const loginToken = generateToken();
           const now = (new Date()).getTime();
+          
+          // delete loginToken with same firebase register token to prevent duplicate
+          await loginTokenCollection.deleteMany({
+            firebaseRegisterToken,
+          });
+
           await loginTokenCollection.insertOne({
             firebaseRegisterToken,
             userId,
