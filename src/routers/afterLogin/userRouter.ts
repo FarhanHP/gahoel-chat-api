@@ -18,9 +18,12 @@ router.get('/profile', async (req, res, next) => {
     const { email, name, imageUrl } = user;
 
     res.status(200).send({
-      email,
-      name,
-      imageUrl
+      message: 'Get profile success',
+      content: {
+        email,
+        name,
+        imageUrl
+      }
     });
   }
   catch(err){
