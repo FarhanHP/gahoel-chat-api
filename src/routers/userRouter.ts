@@ -1,18 +1,10 @@
 import { Router } from 'express';
 import { Db } from 'mongodb';
+import { LoginBody, User } from '../interfaces';
 import { generateToken, isValidEmail } from '../utils';
 import { comparePassword, encryptPassword } from '../utils/password';
 
 const LOGIN_TOKEN_EXPIRE = 1209600000; // login token will expire within 2 week (in ms)
-
-interface User {
-  email: string,
-  name: string,
-  imageUrl: string,
-  password: string,
-  createdAt: number,
-  updatedAt: number,
-}
 
 const router = Router();
 
@@ -68,7 +60,7 @@ router.post('/login', async (req, res, next) => {
     const collection = db.collection('user');
     const loginTokenCollection = db.collection('login_token')
     const { body } = req;
-    const { email, password }: User = body;
+    const { email, password, firebaseRegisterToken }: LoginBody = body;
     const lowerEmail = email.toLowerCase();
     const user = await collection.findOne({email: lowerEmail});
 
@@ -78,26 +70,33 @@ router.post('/login', async (req, res, next) => {
       const same = await comparePassword(password, hashPassword);
       
       if(same) {
-        const loginToken = generateToken();
-        const now = (new Date()).getTime();
-        await loginTokenCollection.insertOne({
-          userId,
-          token: loginToken,
-          createdAt: now,
-          expiredAt: now + LOGIN_TOKEN_EXPIRE
-        });
+        if(firebaseRegisterToken) {
+          const loginToken = generateToken();
+          const now = (new Date()).getTime();
+          await loginTokenCollection.insertOne({
+            firebaseRegisterToken,
+            userId,
+            token: loginToken,
+            createdAt: now,
+            expiredAt: now + LOGIN_TOKEN_EXPIRE
+          });
 
-        res.status(200).send({
-          message: 'Login success',
-          content: {
-            loginToken,
-            user: {
-              email: user.email,
-              imageUrl: user.imageUrl,
-              name: user.name,
+          res.status(200).send({
+            message: 'Login success',
+            content: {
+              loginToken,
+              user: {
+                email: user.email,
+                imageUrl: user.imageUrl,
+                name: user.name,
+              }
             }
-          }
-        })
+          });
+        } else {
+          res.status(400).send({
+            message: 'firebaseRegisterToken can\'t empty',
+          })
+        }
       } else {
         res.status(401).send({
           message: 'Wrong password',
@@ -116,6 +115,6 @@ router.post('/login', async (req, res, next) => {
   }
 
   next();
-})
+});
 
 export default router;

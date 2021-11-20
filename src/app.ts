@@ -3,6 +3,7 @@ import cors from 'cors';
 import { connectClient } from './utils/mongodb';
 import { initializeFirebaseAdmin } from './utils/firebaseAdmin';
 import userRouter from './routers/userRouter';
+import afterLoginRouter from './routers/afterLogin'
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +37,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/user', userRouter)
+app.use('/api/after-login', afterLoginRouter)
 
 //close database connection
 app.use(async (req, res)=>{
