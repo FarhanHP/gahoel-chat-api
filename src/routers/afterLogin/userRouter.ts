@@ -43,7 +43,9 @@ router.delete('/logout', async (req, res, next)=>{
       token: loginTokenInfo.token
     })
 
-    res.status(200).send();
+    res.status(200).send({
+      message: 'Logout success'
+    });
   }
   catch(err){
     console.log(err);
