@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { Db } from 'mongodb';
 import userRouter from './userRouter';
+import messageRouter from './messageRouter';
+import roomRouter from './roomRouter';
 
 const router = Router()
 
@@ -37,6 +39,8 @@ router.use(async (req, res, next)=>{
   next();
 });
 
+router.use('/room', roomRouter)
+router.use('/message', messageRouter)
 router.use('/user', userRouter);
 
 export default router;

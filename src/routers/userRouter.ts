@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Db } from 'mongodb';
+import { Db, ObjectId } from 'mongodb';
 import { LoginBody, User } from '../interfaces';
 import { generateToken, isValidEmail } from '../utils';
 import { comparePassword, encryptPassword } from '../utils/password';
@@ -24,6 +24,7 @@ router.post('/register', async (req, res, next) => {
         const now = (new Date()).getTime()
 
         const newUser: User = {
+          _id: new ObjectId(),
           email: lowerEmail,
           name,
           imageUrl: "",

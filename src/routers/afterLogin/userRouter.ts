@@ -8,23 +8,26 @@ router.get('/profile', async (req, res, next) => {
   try{
     const db: Db = res.locals.db;
     const loginTokenInfo: LoginTokenInfo = res.locals.loginTokenInfo;
-    const userCollection = db.collection("user");
-    const userId = loginTokenInfo.userId;
+    
+    if(loginTokenInfo) {
+      const userCollection = db.collection("user");
+      const userId = loginTokenInfo.userId;
 
-    const user = await userCollection.findOne({
-      _id: userId
-    });
+      const user = await userCollection.findOne({
+        _id: userId
+      });
 
-    const { email, name, imageUrl } = user;
+      const { email, name, imageUrl } = user;
 
-    res.status(200).send({
-      message: 'Get profile success',
-      content: {
-        email,
-        name,
-        imageUrl
-      }
-    });
+      res.status(200).send({
+        message: 'Get profile success',
+        content: {
+          email,
+          name,
+          imageUrl
+        }
+      });
+    }
   }
   catch(err){
     console.log(err);
@@ -54,4 +57,5 @@ router.delete('/logout', async (req, res, next)=>{
 
   next();
 });
+
 export default router;

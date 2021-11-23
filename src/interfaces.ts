@@ -1,22 +1,47 @@
 import { ObjectId } from 'bson';
 
-export interface User {
+export interface DatabaseDocument {
+  _id: ObjectId,
+  updatedAt: number,
+  createdAt: number,
+}
+
+export interface User extends DatabaseDocument {
   email: string,
   name: string,
   imageUrl: string,
   password: string,
-  createdAt: number,
-  updatedAt: number,
 }
 
-export interface LoginTokenInfo {
+export interface LoginTokenInfo extends DatabaseDocument {
   userId: ObjectId,
   token: string,
   firebaseRegisterToken: string,
 }
 
-export interface LoginBody {
-  email: String,
-  password: String,
-  firebaseRegisterToken: String,
+export interface LoginBody extends DatabaseDocument {
+  email: string,
+  password: string,
+  firebaseRegisterToken: string,
+}
+
+export interface CreateMessageBody extends DatabaseDocument {
+  recipientEmail: string,
+  messageBody: string,
+}
+
+export interface CreateMessageBody2 extends DatabaseDocument {
+  roomId: ObjectId,
+  messageBody: string,
+}
+
+export interface ChatRoom extends DatabaseDocument {
+  userIds: [ObjectId, ObjectId],
+  lastInteract: number,
+}
+
+export interface Message extends DatabaseDocument {
+  roomId: ObjectId,
+  senderUserId: ObjectId,
+  messageBody: string,
 }

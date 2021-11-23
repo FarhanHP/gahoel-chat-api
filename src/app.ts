@@ -42,7 +42,7 @@ app.use('/api/after-login', afterLoginRouter)
 //close database connection
 app.use(async (req, res)=>{
   await res.locals.closeClient();
-})
+});
 
 app.listen(PORT, () => {
   return console.log(`server is listening on http://localhost:${PORT}`);
