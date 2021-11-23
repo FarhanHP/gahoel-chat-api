@@ -61,19 +61,17 @@ router.post('/create/new', async (req, res, next) => {
         });
 
         const messages = await messageCollection.find({ roomId }).sort({"createdAt": -1}).toArray();
-        const lastMessage = messages.length > 0 ? messages[0] : null;
-        let lastMessageBody = '';
-        
-        if(lastMessage) {
-          lastMessageBody = `${lastMessage.messageBody.substring(0, 100)}...`;
-        }
 
         res.status(200).send({
           message: 'Create message success',
           content: {
+            roomName: recipientUser.name,
+            roomImage: recipientUser.imageUrl,
             ...room,
-            lastMessageBody,
-            messages,
+            messages: messages.map((message: Message) => ({
+              ...message,
+              isOwner: message.senderUserId.equals(senderUserId),
+            })),
           }
         });
       } else {

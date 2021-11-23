@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Db } from 'mongodb';
-import { LoginTokenInfo, Message } from '../../interfaces';
+import { ChatRoom, LoginTokenInfo, Message } from '../../interfaces';
 
 const router = Router();
 
@@ -13,6 +13,7 @@ router.get('/', async (req, res, next) => {
       const userId = loginTokenInfo.userId;
       const roomCollection = db.collection('room');
       const messageCollection = db.collection('message');
+      const userCollection = db.collection('user');
 
       const rooms = await roomCollection.find({
         userIds: {
@@ -32,23 +33,26 @@ router.get('/', async (req, res, next) => {
       );
       
       const messages = await Promise.all(promises);
+      const roomsOutput = await Promise.all(rooms.map(async (room: ChatRoom, index) => {
+        const currentMessages: Message[] = messages[index];
+        const secondUserId = room.userIds.filter((value) => !value.equals(userId))[0]
+        const secondUser = await userCollection.findOne({_id: secondUserId});
+
+        return {
+          roomName: secondUser.name,
+          roomImage: secondUser.imageUrl,
+          ...room,
+          messages: currentMessages.map((message) => ({
+            ...message,
+            isOwner: message.senderUserId.equals(userId)
+          })),
+        };
+      }));
 
       res.status(200).send({
         message: 'Fetch rooms success',
         content: {
-          rooms: rooms.map((value, index) => {
-            const currentMessages: Message[] = messages[index];
-            let lastMessageBody = '';
-            if(currentMessages.length) {
-              lastMessageBody = `${currentMessages[0].messageBody.substring(0, 100)}...`;
-            }
-
-            return {
-              ...value,
-              lastMessageBody,
-              messages: messages[index],
-            };
-          }),
+          rooms: roomsOutput,
         }
       })
     }
