@@ -106,7 +106,7 @@ router.post('/create', async (req, res, next) => {
           const now = (new Date()).getTime();
 
           await roomCollection.updateOne({
-            _id: roomId
+            _id: roomObjectId
           }, {
             '$set': {
               lastInteractAt: now,
@@ -116,7 +116,7 @@ router.post('/create', async (req, res, next) => {
           const newMessage: Message = {
             _id: new ObjectId(),
             senderUserId: userId,
-            roomId,
+            roomId: roomObjectId,
             messageBody,
             createdAt: now,
             updatedAt: now,
