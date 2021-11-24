@@ -126,7 +126,10 @@ router.post('/create', async (req, res, next) => {
           res.status(200).send({
             message: 'Message sent successfully',
             content: {
-              message: newMessage,
+              message: {
+                ...newMessage,
+                isOwner: true,
+              },
             },
           })
         } else {
