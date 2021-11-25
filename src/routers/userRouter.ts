@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { Db, ObjectId } from 'mongodb';
 import { LoginBody, User } from '../interfaces';
+import { getRoomsByUserId } from '../models/room';
 import { generateToken, isValidEmail } from '../utils';
+import { subscribeToTopic } from '../utils/firebaseAdmin';
 import { comparePassword, encryptPassword } from '../utils/password';
 
 const LOGIN_TOKEN_EXPIRE = 1209600000; // login token will expire within 2 week (in ms)
@@ -75,10 +77,20 @@ router.post('/login', async (req, res, next) => {
           const loginToken = generateToken();
           const now = (new Date()).getTime();
           
-          // delete loginToken with same firebase register token to prevent duplicate
-          await loginTokenCollection.deleteMany({
-            firebaseRegisterToken,
-          });
+          const [rooms] = await Promise.all([
+            getRoomsByUserId(db, userId),
+
+            // delete loginToken with same firebase register token to prevent duplicate
+            loginTokenCollection.deleteMany({
+              firebaseRegisterToken,
+            }),
+          ]);
+
+          await Promise.all([
+            rooms.map((value) =>
+              subscribeToTopic(value._id.toString(), [firebaseRegisterToken])
+            )
+          ]);
 
           await loginTokenCollection.insertOne({
             firebaseRegisterToken,
@@ -93,6 +105,7 @@ router.post('/login', async (req, res, next) => {
             content: {
               loginToken,
               user: {
+                _id: user._id,
                 email: user.email,
                 imageUrl: user.imageUrl,
                 name: user.name,

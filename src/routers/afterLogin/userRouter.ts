@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { Db } from 'mongodb';
 import { LoginTokenInfo } from '../../interfaces';
+import { getRoomsByUserId } from '../../models/room';
+import { unsubscribeToTopic } from '../../utils/firebaseAdmin';
 
 const router = Router()
 
@@ -22,6 +24,7 @@ router.get('/profile', async (req, res, next) => {
       res.status(200).send({
         message: 'Get profile success',
         content: {
+          _id: userId,
           email,
           name,
           imageUrl
@@ -40,11 +43,20 @@ router.get('/profile', async (req, res, next) => {
 router.delete('/logout', async (req, res, next)=>{
   try{
     const db: Db = res.locals.db;
+    const loginTokenCollection = db.collection('login_token');
     const loginTokenInfo: LoginTokenInfo = res.locals.loginTokenInfo;
+    const { userId, firebaseRegisterToken } = loginTokenInfo;
 
-    await db.collection('login_token').deleteMany({
-      token: loginTokenInfo.token
-    })
+    const [rooms] = await Promise.all([
+      getRoomsByUserId(db, userId),
+      loginTokenCollection.deleteMany({
+        token: loginTokenInfo.token
+      })
+    ]);
+
+    await Promise.all(rooms.map(({_id}) => {
+      unsubscribeToTopic(_id.toString(), [firebaseRegisterToken])
+    }));
 
     res.status(200).send({
       message: 'Logout success'

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Db } from 'mongodb';
 import { ChatRoom, LoginTokenInfo, Message } from '../../interfaces';
+import { getRoomsByUserId } from '../../models/room';
 
 const router = Router();
 
@@ -11,22 +12,17 @@ router.get('/', async (req, res, next) => {
 
     if(loginTokenInfo) {
       const userId = loginTokenInfo.userId;
-      const roomCollection = db.collection('room');
       const messageCollection = db.collection('message');
       const userCollection = db.collection('user');
 
-      const rooms = await roomCollection.find({
-        userIds: {
-          '$in' : [ userId ]
-        }
-      }).sort({lastInteractAt: -1}).toArray();
+      const rooms = await getRoomsByUserId(db, userId)
 
       const promises = [];
 
-      rooms.forEach(( value ) => 
+      rooms.forEach(({ _id }) => 
         promises.push(
           messageCollection
-          .find({ roomId: value._id })
+          .find({ roomId: _id })
           .sort({ createdAt: -1 })
           .toArray()
         )

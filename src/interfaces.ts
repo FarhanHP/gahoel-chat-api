@@ -31,7 +31,7 @@ export interface CreateMessageBody extends DatabaseDocument {
 }
 
 export interface CreateMessageBody2 extends DatabaseDocument {
-  roomId: ObjectId,
+  roomId: string,
   messageBody: string,
 }
 

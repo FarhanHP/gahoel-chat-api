@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Db, ObjectId } from 'mongodb';
 import { CreateMessageBody, CreateMessageBody2, LoginTokenInfo, Message } from '../../interfaces';
+import { sendMessageToTopic } from '../../utils/firebaseAdmin';
 
 const router = Router()
 
@@ -52,15 +53,32 @@ router.post('/create/new', async (req, res, next) => {
 
         const roomId = room._id;
 
-        await messageCollection.insertOne({
+        const newMessage: Message = {
+          _id: new ObjectId(),
           roomId,
           senderUserId,
           messageBody,
           createdAt: now,
           updatedAt: now,
-        });
+        }
 
-        const messages = await messageCollection.find({ roomId }).sort({"createdAt": -1}).toArray();
+        const [ user ] = await Promise.all([
+          userCollection.findOne({ _id: senderUserId }),
+          messageCollection.insertOne(newMessage),
+        ]);
+
+        const [ messages ] = await Promise.all([
+          messageCollection.find({ roomId }).sort({"createdAt": -1}).toArray(),
+          sendMessageToTopic({
+            topicName: roomId.toString(),
+            messageId: newMessage._id,
+            messageBody: messageBody,
+            senderUserId,
+            roomId: roomId,
+            createdAt: newMessage.createdAt,
+            notificationTitle: user.name,
+          })
+        ]);
 
         res.status(200).send({
           message: 'Create message success',
@@ -90,6 +108,7 @@ router.post('/create', async (req, res, next) => {
   try {
     const db: Db = res.locals.db;
     const roomCollection = db.collection('room');
+    const userCollection = db.collection('user');
     const messageCollection = db.collection('message');
     const loginTokenInfo: LoginTokenInfo = res.locals.loginTokenInfo;
     const { body } = req;
@@ -105,13 +124,18 @@ router.post('/create', async (req, res, next) => {
         if(room) {
           const now = (new Date()).getTime();
 
-          await roomCollection.updateOne({
-            _id: roomObjectId
-          }, {
-            '$set': {
-              lastInteractAt: now,
-            }
-          });
+          const [ user ] = await Promise.all([
+            userCollection.findOne({
+              _id: userId
+            }),
+            roomCollection.updateOne({
+              _id: roomObjectId
+            }, {
+              '$set': {
+                lastInteractAt: now,
+              }
+            })
+          ]);
 
           const newMessage: Message = {
             _id: new ObjectId(),
@@ -122,7 +146,19 @@ router.post('/create', async (req, res, next) => {
             updatedAt: now,
           };
 
-          await messageCollection.insertOne(newMessage);
+          await Promise.all([
+            messageCollection.insertOne(newMessage),
+            sendMessageToTopic({
+              topicName: roomId,
+              messageId: newMessage._id,
+              messageBody: messageBody,
+              senderUserId: userId,
+              roomId: roomObjectId,
+              createdAt: newMessage.createdAt,
+              notificationTitle: user.name,
+            })
+          ])
+
           res.status(200).send({
             message: 'Message sent successfully',
             content: {
