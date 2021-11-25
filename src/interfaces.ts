@@ -37,7 +37,7 @@ export interface CreateMessageBody2 extends DatabaseDocument {
 
 export interface ChatRoom extends DatabaseDocument {
   userIds: [ObjectId, ObjectId],
-  lastInteract: number,
+  lastInteractAt: number,
 }
 
 export interface Message extends DatabaseDocument {

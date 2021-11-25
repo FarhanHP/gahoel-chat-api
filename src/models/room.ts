@@ -17,6 +17,6 @@ export const getRoomsByUserId = async (db: Db, userId: ObjectId, sort: Sort = {l
     createdAt: value.createdAt,
     updatedAt: value.updatedAt,
     userIds: value.userIds,
-    lastInteract: value.lastInteract
+    lastInteractAt: value.lastInteractAt
   }))
 }
