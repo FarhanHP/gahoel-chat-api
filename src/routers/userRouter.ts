@@ -86,11 +86,11 @@ router.post('/login', async (req, res, next) => {
             }),
           ]);
 
-          await Promise.all([
+          await Promise.all(
             rooms.map((value) =>
               subscribeToTopic(value._id.toString(), [firebaseRegisterToken])
             )
-          ]);
+          );
 
           await loginTokenCollection.insertOne({
             firebaseRegisterToken,
