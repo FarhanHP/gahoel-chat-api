@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Db } from 'mongodb';
 import { LoginTokenInfo } from '../../interfaces';
 import { getRoomsByUserId } from '../../models/room';
-import { unsubscribeToTopic } from '../../utils/firebaseAdmin';
+import { subscribeToTopic, unsubscribeToTopic } from '../../utils/firebaseAdmin';
 
 const router = Router()
 
@@ -39,6 +39,28 @@ router.get('/profile', async (req, res, next) => {
 
   next();
 });
+
+router.post('/firebase-registration-token', async(req, res, next) => {
+  try {
+    const db: Db = res.locals.db;
+    const loginTokenInfo: LoginTokenInfo = res.locals.loginTokenInfo;
+
+    if(loginTokenInfo) {
+      const { firebaseRegisterToken, userId } = loginTokenInfo;
+      const rooms = await getRoomsByUserId(db, userId);
+      await Promise.all(rooms.map(({_id}) => subscribeToTopic(_id.toString(), [firebaseRegisterToken])));
+      
+      res.status(200).send({
+        message: 'register firebaseRegistrationToken success',
+      })
+    }
+  } catch(error) {
+    console.log(error)
+    res.status(500).send();
+  }
+
+  next();
+})
 
 router.delete('/logout', async (req, res, next)=>{
   try{

@@ -16,7 +16,7 @@ export const initializeFirebaseAdmin = () => {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as ServiceAccount)
   });  
-}
+};
 
 export const subscribeToTopic = async (topicName: string, registerTokens: string[]) => {
   const res = await messaging().subscribeToTopic(registerTokens, topicName);
