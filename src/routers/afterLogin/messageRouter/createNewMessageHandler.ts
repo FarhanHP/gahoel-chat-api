@@ -2,7 +2,7 @@ import { Handler } from 'express';
 import { Db } from 'mongodb';
 import { CreateMessageBody, LoginTokenInfo, Message } from '../../../interfaces';
 import { ObjectId } from 'bson';
-import { sendMessageToTopic, sendRoomToFirebaseRegistrationToken } from '../../../utils/firebaseAdmin';
+import { sendMessageToTopic, sendRoomToFirebaseRegistrationToken, subscribeToTopic } from '../../../utils/firebaseAdmin';
 
 const createNewMessageHandler: Handler = async (req, res, next) => {
   try {
@@ -76,9 +76,9 @@ const createNewMessageHandler: Handler = async (req, res, next) => {
             }
           }).toArray()).map((value: LoginTokenInfo) => value.firebaseRegisterToken)
 
-          // send notifications
-          await Promise.all(
-            firebaseRegisterTokens.map(
+          await Promise.all([
+            // send notifications
+            ...(firebaseRegisterTokens.map(
               (frt) => sendRoomToFirebaseRegistrationToken({
                 registrationToken: frt,
                 senderUserName: senderUser.name,
@@ -91,8 +91,12 @@ const createNewMessageHandler: Handler = async (req, res, next) => {
                 firstMessageBody: messageBody,
                 firstMessageId: newMessage._id,
               })
-            )
-          );
+            )),
+            
+            // subscribe topics
+            subscribeToTopic(roomId.toString(), firebaseRegisterTokens)
+          ]);
+          
         } else {
           await sendMessageToTopic({
             topicName: roomId.toString(),
