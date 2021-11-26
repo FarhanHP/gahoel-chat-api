@@ -89,6 +89,7 @@ const createNewMessageHandler: Handler = async (req, res, next) => {
                 createdAt: room.createdAt,
                 updatedAt: room.updatedAt,
                 firstMessageBody: messageBody,
+                firstMessageId: newMessage._id,
               })
             )
           );

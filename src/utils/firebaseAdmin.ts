@@ -23,6 +23,7 @@ interface SendRoomToFirebaseRegistrationTokenArgs {
   createdAt: number,
   updatedAt: number,
   firstMessageBody: string,
+  firstMessageId: ObjectId,
 }
 
 export const initializeFirebaseAdmin = () => {
@@ -86,6 +87,7 @@ export const sendRoomToFirebaseRegistrationToken = async ({
   createdAt,
   updatedAt,
   firstMessageBody,
+  firstMessageId,
 }: SendRoomToFirebaseRegistrationTokenArgs)  => {
   const message: FirebaseMessage = {
     token: registrationToken,
@@ -99,6 +101,7 @@ export const sendRoomToFirebaseRegistrationToken = async ({
       createdAt: createdAt.toString(),
       updatedAt: updatedAt.toString(),
       firstMessageBody,
+      firstMessageId: firstMessageId.toString(),
     },
     notification: {
       title: senderUserName,
