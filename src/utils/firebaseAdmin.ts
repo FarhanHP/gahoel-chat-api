@@ -119,6 +119,9 @@ export const sendRoomToFirebaseRegistrationToken = async ({
       sendRoomToFirebaseRegistrationTokenRes: res,
     })
   } catch(err) {
-    console.log(err)
+    console.log({
+      err,
+      registrationToken,
+    })
   }
 }
