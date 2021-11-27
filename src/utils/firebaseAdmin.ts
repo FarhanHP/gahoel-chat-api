@@ -71,10 +71,14 @@ export const sendMessageToTopic = async ({
     }
   }
 
-  const res = await messaging().send(message)
-  console.log({
-    sendMessageToTopicRes: res,
-  });
+  try {
+    const res = await messaging().send(message)
+    console.log({
+      sendMessageToTopicRes: res,
+    });
+  } catch(err) {
+    console.log(err);
+  }
 };
 
 export const sendRoomToFirebaseRegistrationToken = async ({
@@ -109,8 +113,12 @@ export const sendRoomToFirebaseRegistrationToken = async ({
     },
   };
 
-  const res = await messaging().send(message);
-  console.log({
-    sendRoomToFirebaseRegistrationTokenRes: res,
-  })
+  try {
+    const res = await messaging().send(message);
+    console.log({
+      sendRoomToFirebaseRegistrationTokenRes: res,
+    })
+  } catch(err) {
+    console.log(err)
+  }
 }
