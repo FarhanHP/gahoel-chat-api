@@ -1,6 +1,6 @@
 import admin, { messaging, ServiceAccount } from 'firebase-admin';
 import { ObjectId } from 'bson';
-import serviceAccount from '../../gahoel-chat-firebase-adminsdk-cwqaq-1314454b27.json';
+import serviceAccount from '../../gahoel-chat-firebase-adminsdk.json';
 import { Message as FirebaseMessage } from 'firebase-admin/lib/messaging/messaging-api';
 
 interface SendMessageToTopicArgs {
