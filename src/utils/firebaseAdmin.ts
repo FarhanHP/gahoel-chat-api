@@ -1,7 +1,7 @@
 import admin, { messaging, ServiceAccount } from 'firebase-admin';
 import { ObjectId } from 'bson';
-import serviceAccount from '../../gahoel-chat-firebase-adminsdk.json';
 import { Message as FirebaseMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import { FIREBASE_ADMINSDK_JSON } from '../env';
 
 interface SendMessageToTopicArgs {
   topicName: string,
@@ -28,7 +28,7 @@ interface SendRoomToFirebaseRegistrationTokenArgs {
 
 export const initializeFirebaseAdmin = () => {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as ServiceAccount)
+    credential: admin.credential.cert(JSON.parse(FIREBASE_ADMINSDK_JSON) as ServiceAccount)
   });  
 };
 
